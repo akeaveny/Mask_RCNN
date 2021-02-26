@@ -68,7 +68,7 @@ class UMDConfig(Config):
     ##################################
     ''' --- run datasetstats for all params below --- '''
 
-    MEAN_PIXEL = np.array([96.78, 94.99, 103.82])  ### REAL
+    MEAN_PIXEL = np.array([91.15, 88.89, 98.80])  ### REAL
 
     IMAGE_RESIZE_MODE = "crop"
     IMAGE_MIN_DIM = 128
@@ -127,13 +127,13 @@ class UMDDataset(utils.Dataset):
              annotations = {}
              print("------------------LOADING TRAIN!------------------")
              annotations.update(json.load(
-               open('/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Syn/coco_tools_train_4.json')))
+               open('/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Real/coco_tools_train_5000.json')))
 
         elif subset == 'val':
             annotations = {}
             print("------------------LOADING VAL!--------------------")
             annotations.update(json.load(
-                open('/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Real/coco_tools_val_4.json')))
+                open('/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Real/coco_tools_val_1250.json')))
 
         elif subset == 'test':
             annotations = {}
@@ -165,19 +165,6 @@ class UMDDataset(utils.Dataset):
                 width=width, height=height,
                 polygons=polygons,
             )
-
-    def load_image_rgb_depth(self, image_id):
-
-        file_path = np.str(image_id).split("rgb.jpg")[0]
-
-        rgb = skimage.io.imread(file_path + "rgb.jpg")
-        depth = skimage.io.imread(file_path + "depth.png")
-
-        ##################################
-        # RGB has 4th channel - alpha
-        # depth to 3 channels
-        ##################################
-        return rgb[..., :3], skimage.color.gray2rgb(depth)
 
     def load_mask(self, image_id):
         """Generate instance masks for an image.
@@ -223,49 +210,18 @@ class UMDDataset(utils.Dataset):
         # one class ID only, we return an array of 1s
         return mask.astype(np.bool), class_IDs
 
-    def load_bbox(self, image_id):
-        """Generate instance masks for an image.
-       Returns:
-        masks: A bool array of shape [height, width, instance count] with
-            one mask per instance.
-        class_ids: a 1D array of class IDs of the instance masks.
-        """
-        # If not a UMD dataset image, delegate to parent class.
-        image_info = self.image_info[image_id]
-        if image_info["source"] != "UMD":
-            return super(self.__class__, self).load_mask(image_id)
+    def load_image_rgb_depth(self, image_id):
 
-        # Convert polygons to a bitmap mask of shape
-        # [height, width, instance_count]
-        info = self.image_info[image_id]
-        mask = np.zeros([info["height"], info["width"], len(info["polygons"])],
-                        dtype=np.uint8)
-        class_IDs = np.zeros([len(info["polygons"])], dtype=np.int32)
+        file_path = np.str(image_id).split("rgb.jpg")[0]
 
-        #################
-        # tools
-        #################
+        rgb = skimage.io.imread(file_path + "rgb.jpg")
+        depth = skimage.io.imread(file_path + "depth.png")
 
-        # for i, p in enumerate(info["polygons"]):
-        #     # Get indexes of pixels inside the polygon and set them to 1
-        #     rr, cc = skimage.draw.polygon(p['all_points_y'], p['all_points_x'])
-        #     mask[rr, cc, i] = 1
-        #     class_IDs[i] = p['class_id']
-
-        #################
-        # clutter
-        #################
-
-        for i, p in enumerate(info["polygons"]):
-            for countour_idx, _ in enumerate(range(p["num_contours"])):
-                # Get indexes of pixels inside the polygon and set them to 1
-                rr, cc = skimage.draw.polygon(p['all_points_y' + str(countour_idx)], p['all_points_x' + str(countour_idx)])
-                mask[rr, cc, i] = 1
-                class_IDs[i] = p['class_id']
-
-        # Return mask, and array of class IDs of each instance. Since we have
-        # one class ID only, we return an array of 1s
-        return mask.astype(np.bool), class_IDs
+        ##################################
+        # RGB has 4th channel - alpha
+        # depth to 3 channels
+        ##################################
+        return rgb[..., :3], skimage.color.gray2rgb(depth)
 
     def image_reference(self, image_id):
         """Return the path of the image."""
