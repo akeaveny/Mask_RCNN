@@ -1,7 +1,7 @@
+
 """
 Mask R-CNN
 Display and Visualization Functions.
-
 Copyright (c) 2017 Matterport, Inc.
 Licensed under the MIT License (see LICENSE for details)
 Written by Waleed Abdulla
@@ -26,7 +26,6 @@ ROOT_DIR = os.path.abspath("../")
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
 from mrcnn import utils
-
 
 ############################################################
 #  Visualization
@@ -53,8 +52,7 @@ def display_images(images, titles=None, cols=4, cmap=None, norm=None,
         plt.imshow(image.astype(np.uint8), cmap=cmap,
                    norm=norm, interpolation=interpolation)
         i += 1
-    plt.show()
-
+    # plt.show()
 
 def random_colors(N, bright=True):
     """
@@ -304,7 +302,6 @@ def display_top_masks(image, mask, class_ids, class_names, limit=4):
 
 def plot_precision_recall(AP, precisions, recalls):
     """Draw the precision-recall curve.
-
     AP: Average precision at IoU >= 0.5
     precisions: list of precision values
     recalls: list of recall values
@@ -361,7 +358,6 @@ def draw_boxes(image, boxes=None, refined_boxes=None,
                title="", ax=None):
     """Draw bounding boxes and segmentation masks with different
     customizations.
-
     boxes: [N, (y1, x1, y2, x2, class_id)] in image coordinates.
     refined_boxes: Like boxes, but draw with solid lines to show
         that they're the result of refining 'boxes'.

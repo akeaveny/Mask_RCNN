@@ -8,6 +8,7 @@ Written by Waleed Abdulla
 """
 
 import numpy as np
+import math
 
 
 # Base Configuration Class
@@ -129,7 +130,7 @@ class Config(object):
     # Minimum scaling ratio. Checked after MIN_IMAGE_DIM and can force further
     # up scaling. For example, if set to 2 then images are scaled up to double
     # the width and height, or more, even if MIN_IMAGE_DIM doesn't require it.
-    # However, in 'square' mode, it can be overruled by IMAGE_MAX_DIM.
+    # Howver, in 'square' mode, it can be overruled by IMAGE_MAX_DIM.
     IMAGE_MIN_SCALE = 0
     # Number of color channels per image. RGB = 3, grayscale = 1, RGB-D = 4
     # Changing this requires other changes in the code. See the WIKI for more
@@ -214,6 +215,16 @@ class Config(object):
         """Set values of computed attributes."""
         # Effective batch size
         self.BATCH_SIZE = self.IMAGES_PER_GPU * self.GPU_COUNT
+
+        # Input image size
+        self.IMAGE_SHAPE = np.array(
+            [self.IMAGE_MAX_DIM, self.IMAGE_MAX_DIM, 3])
+
+        # Compute backbone size from input image size
+        self.BACKBONE_SHAPES = np.array(
+            [[int(math.ceil(self.IMAGE_SHAPE[0] / stride)),
+              int(math.ceil(self.IMAGE_SHAPE[1] / stride))]
+             for stride in self.BACKBONE_STRIDES])
 
         # Input image size
         if self.IMAGE_RESIZE_MODE == "crop":
