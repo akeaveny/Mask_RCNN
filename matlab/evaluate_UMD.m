@@ -7,17 +7,13 @@ aff_list = {1, 2, 3, 4, 5, 6, 7};
 % aff_list = {1, 5};
 
 % get all files
-% list_gt = getAllFiles(path, '*_mask_og.png', 1);   % get all files in current folder
-% list_predicted = getAllFiles(path, '*_mask_cropped.png', 1);
 list_gt = getAllFiles(path, '*_gt.png', 1);   % get all files in current folder
 list_predicted = getAllFiles(path, '*_pred.png', 1);
-% list_gt = getAllFiles(path, '*_gt.png', 1);   % get all files in current folder
-% list_predicted = getAllFiles(path, '*_pred.png', 1);
 
 list_predicted = sort(list_predicted);
 list_gt = sort(list_gt); % make the same style
 
-% fprintf('gt: %d, pred: %d \n', length(list_gt), length(list_predicted));
+fprintf('gt: %d, pred: %d \n', length(list_gt), length(list_predicted));
 assert(length(list_predicted)==length(list_gt)); % test length
 num_of_files = length(list_gt);
 
@@ -58,10 +54,10 @@ for aff_idx = 1:length(aff_list)  % from 2 --> final_aff_id
         end
         
     end
-%     fprintf('Averaged F_wb for affordance id=%d is: %f \n', aff_id-1, nanmean(F_wb_aff));
+    fprintf('Averaged F_wb for affordance id=%d is: %f \n', aff_id-1, nanmean(F_wb_aff));
     F_wb_non_rank = [F_wb_non_rank; nanmean(F_wb_aff)];
 end
-% fprintf('\nAVE over all Affordance IDs: %f \n\n', nanmean(F_wb_non_rank));
+fprintf('\nAVE over all Affordance IDs: %f \n\n', nanmean(F_wb_non_rank));
 AVE_F_wb = nanmean(F_wb_non_rank);
 
 end

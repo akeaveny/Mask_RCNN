@@ -41,7 +41,7 @@ parser.add_argument('--train', required=False, default='rgb',
                     metavar="Train RGB or RGB+D")
 
 parser.add_argument('--dataset', required=False,
-                    default='/home/akeaveny/datasets/DomainAdaptation/UMD/',
+                    default='/data/Akeaveny/Datasets/domain_adaptation/UMD/',
                     type=str,
                     metavar="/path/to/Affordance/dataset/")
 

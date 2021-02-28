@@ -74,12 +74,12 @@ class UMDConfig(Config):
     IMAGE_MIN_DIM = 128
     IMAGE_MAX_DIM = 128
     # RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)  ### 1024
-    RPN_ANCHOR_SCALES = (8, 16, 24, 32, 64)  ### 1024
+    # RPN_ANCHOR_SCALES = (8, 16, 24, 32, 64)  ### 1024
 
-    # IMAGE_RESIZE_MODE = "square"
-    # IMAGE_MIN_DIM = 640
-    # IMAGE_MAX_DIM = 640
-    # RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)  ### 1024
+    IMAGE_RESIZE_MODE = "square"
+    IMAGE_MIN_DIM = 640
+    IMAGE_MAX_DIM = 640
+    RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)  ### 1024
 
     USE_MINI_MASK = True
     MINI_MASK_SHAPE = (56, 56)
@@ -93,9 +93,9 @@ class UMDConfig(Config):
     TRAIN_ROIS_PER_IMAGE = 100  # TODO: DS bowl 512
     RPN_TRAIN_ANCHORS_PER_IMAGE = 128
 
-# ###########################################################
-# # Dataset
-# ###########################################################
+###########################################################
+# Dataset
+###########################################################
 
 class UMDDataset(utils.Dataset):
 
@@ -139,7 +139,7 @@ class UMDDataset(utils.Dataset):
             annotations = {}
             print("------------------LOADING Test!--------------------")
             annotations.update(json.load(
-                open('/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Real/coco_tools_val_4.json')))
+                open('/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Real/coco_tools_test_1298.json')))
 
         annotations = list(annotations.values())
         # The VIA tool saves images in the JSON even if they don't have any
@@ -212,10 +212,17 @@ class UMDDataset(utils.Dataset):
 
     def load_image_rgb_depth(self, image_id):
 
-        file_path = np.str(image_id).split("rgb.jpg")[0]
+        file_path = np.str(image_id).split('.jpg')[0]
+        datapath = file_path.split('rgb/')[0]
+        idx = file_path.split('rgb/')[1]
 
-        rgb = skimage.io.imread(file_path + "rgb.jpg")
-        depth = skimage.io.imread(file_path + "depth.png")
+        rgb_addr = np.str(datapath + 'rgb/' + idx + '.jpg')
+        depth_addr = np.str(datapath + 'depth/' + idx + '_depth.png')
+        
+        # print('file_path: ', file_path)
+
+        rgb = skimage.io.imread(rgb_addr)
+        depth = skimage.io.imread(depth_addr)
 
         ##################################
         # RGB has 4th channel - alpha
@@ -230,3 +237,31 @@ class UMDDataset(utils.Dataset):
             return info["path"]
         else:
             super(self.__class__, self).image_reference(image_id)
+
+###########################################################
+###########################################################
+
+def color_map():
+    color_map_dic = {
+    0:  [0, 0, 0],
+    1:  [128, 128,   0],
+    2:  [  0, 128, 128],
+    3:  [128,   0, 128],
+    4:  [128,   0,   0],
+    5:  [  0, 128,   0],
+    6:  [  0,   0, 128],
+    7:  [255, 255,   0],
+    8:  [255,   0, 255],
+    9:  [  0, 255, 255],
+    10: [255,   0,   0],
+    11: [  0, 255,   0],
+    12: [  0,   0, 255],
+    13: [ 92,  112, 92],
+    14: [  0,   0,  70],
+    15: [  0,  60, 100],
+    16: [  0,  80, 100],
+    17: [  0,   0, 230],
+    18: [119,  11,  32],
+    19: [  0,   0, 121]
+    }
+    return color_map_dic

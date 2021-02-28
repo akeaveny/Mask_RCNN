@@ -31,7 +31,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Get Stats from Image Dataset')
 
 parser.add_argument('--dataset', required=False,
-                    default='/home/akeaveny/datasets/DomainAdaptation/UMD/',
+                    default='/data/Akeaveny/Datasets/domain_adaptation/UMD/',
                     type=str,
                     metavar="/path/to/UMD/dataset/")
 parser.add_argument('--dataset_split', required=False, default='val',

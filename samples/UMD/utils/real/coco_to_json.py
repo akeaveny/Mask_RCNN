@@ -154,7 +154,7 @@ print("Affordance IDs: \n{}\n".format(class_id))
 json_path = '/home/akeaveny/git/Mask_RCNN/samples/UMD/json/Real/'
 json_name = 'coco_tools_'
 
-data_path = '/home/akeaveny/datasets/DomainAdaptation/UMD/'
+data_path = '/data/Akeaveny/Datasets/domain_adaptation/UMD/'
 val_path = 'Real/val/'
 train_path = 'Real/train/'
 test_path = 'Real/test/'
@@ -165,10 +165,10 @@ label_ext = '_label.png'
 
 VISUALIZE = False
 
-use_random_idx = True
+use_random_idx = False
 num_val = 0 # 1250
-num_train = 5000
-num_test = 0
+num_train = 0 # 5000
+num_test = 4
 
 ###########################################################
 # JSON FILES
@@ -256,8 +256,6 @@ else:
 
         # y1, x1, y2, x2
         bbox = extract_bboxes(mask)
-        # (X coordinate value, Y coordinate value)
-        # cv2.rectangle(mask, (bbox[1], bbox[0]), (bbox[3], bbox[2]), 255, 2)
 
         # data[img_name]['bbox'] = bbox.tolist()
         # data[img_name]['object_id'] = 1
@@ -370,8 +368,118 @@ else:
 
         # y1, x1, y2, x2
         bbox = extract_bboxes(mask)
-        # (X coordinate value, Y coordinate value)
-        # cv2.rectangle(mask, (bbox[1], bbox[0]), (bbox[3], bbox[2]), 255, 2)
+
+        # data[img_name]['bbox'] = bbox.tolist()
+        # data[img_name]['object_id'] = 1
+
+        ###################
+        # affmasks
+        ###################
+        data[img_name]['regions'] = {}
+        regions = {}
+
+        print("class ids: ", np.unique(label_img))
+        label_img = Image.fromarray(label_img)
+
+        ###
+        sub_masks = create_sub_masks(label_img)
+        for idx, sub_mask in sub_masks.items():
+            if int(idx) > 0:
+                object_id = int(idx)
+                print("object_id: ", object_id)
+                region = create_sub_mask_annotation(class_id=object_id,
+                                                    sub_mask=sub_mask,
+                                                    mask=label_img,
+                                                    bbox=bbox)
+                regions[np.str(object_id)] = region
+        data[img_name]['regions'] = regions
+        iteration += 1
+
+    with open(json_addr, 'w') as outfile:
+        json.dump(data, outfile, sort_keys=True)
+
+###################
+# TEST
+###################
+if num_test == 0:
+    print('******************** SKIPPING TEST ********************')
+    pass
+else:
+    print('******************** TEST! ********************')
+    folder_to_save = test_path
+    rgb_path   = data_path + folder_to_save + 'rgb/' + '*' + rgb_ext
+    depth_path = data_path + folder_to_save + 'depth/' + '*' + depth_ext
+    label_path = data_path + folder_to_save + 'masks/' + '*' + label_ext
+
+    print("labels: ", label_path)
+    rgb_files = np.array(sorted(glob.glob(rgb_path)))
+    depth_files = np.array(sorted(glob.glob(depth_path)))
+    label_files = np.array(sorted(glob.glob(label_path)))
+    assert (len(rgb_files) == len(depth_files) == len(label_files))
+    print("Loaded label_files: ", len(label_files))
+
+    if use_random_idx:
+        test_idx = np.random.choice(np.arange(0, len(label_files), 1), size=int(num_test), replace=False)
+        print("Chosen Files ", len(test_idx))
+        rgb_files = rgb_files[test_idx]
+        depth_files = depth_files[test_idx]
+        label_files = label_files[test_idx]
+    else:
+        num_test = len(label_files)
+
+    data = {}
+    iteration = 0
+
+    ###################
+    ###################
+
+    json_addr = json_path + json_name + 'test_' + np.str(len(label_files)) + '.json'
+    print("json_addr: ", json_addr)
+    for idx, label_file in enumerate(label_files):
+
+        str_num = label_file.split(data_path + folder_to_save)[1]
+        img_number = str_num.split(label_ext)[0]
+
+        print("rgb_file: ", rgb_files[idx].split(data_path)[1])
+        print('Image: {}/{}'.format(iteration, len(label_files)))
+
+        rgb_img   = np.array(cv2.imread(rgb_files[idx], -1))
+        depth_img = np.array(cv2.imread(depth_files[idx], -1))
+        label_img = np.array(cv2.imread(label_files[idx], -1))
+
+        object_ids = np.unique(np.array(label_img))
+        print("GT Affordances:", object_ids)
+
+        # if VISUALIZE:
+        #     cv2.imshow('rgb', rgb_img)
+        #     cv2.imshow('obj_label', label_img * 40)
+        #
+        #     depth_img = depth_img / np.max(depth_img) * (2**8-1)
+        #     depth_img = np.array(depth_img, dtype=np.uint8)
+        #     cv2.imshow('depth', depth_img)
+        #     cv2.imshow('heatmap', cv2.applyColorMap(depth_img, cv2.COLORMAP_JET))
+        #     cv2.waitKey(1)
+
+        ####################
+        ### init
+        ####################
+        img_name = img_number + dataset_name
+        data[img_name] = {}
+        data[img_name]['fileref'] = ""
+        data[img_name]['size'] = 640
+        data[img_name]['filename'] = rgb_files[idx].split(data_path)[1]
+        data[img_name]['depthfilename'] = depth_files[idx].split(data_path)[1]
+        data[img_name]['base64_img_data'] = ""
+        data[img_name]['file_attributes'] = {}
+
+        ####################
+        ### bbox
+        ####################
+
+        mask = np.array(label_img.copy(), dtype=np.uint8)
+
+        # y1, x1, y2, x2
+        bbox = extract_bboxes(mask)
 
         # data[img_name]['bbox'] = bbox.tolist()
         # data[img_name]['object_id'] = 1

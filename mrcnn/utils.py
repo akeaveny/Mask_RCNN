@@ -445,7 +445,7 @@ def resize_image(image, min_dim=None, max_dim=None, min_scale=None, mode="square
             scale = max_dim / image_max
 
     # TODO (ak): half UMD image
-    scale = 1/3
+    # scale = 1/3
     # Resize image using bilinear interpolation
     if scale != 1:
         image = resize(image, (round(h * scale), round(w * scale)),
